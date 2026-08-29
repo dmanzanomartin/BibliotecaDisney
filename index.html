@@ -1,0 +1,723 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#2B1644">
+  <title>Mi colección · Disney Novelas Inolvidables</title>
+  <script>
+    tailwind = {
+      config: {
+        theme: {
+          extend: {
+            fontFamily: {
+              display: ["Space Grotesk", "ui-sans-serif", "system-ui"],
+              sans: ["DM Sans", "ui-sans-serif", "system-ui"]
+            },
+            colors: {
+              ink: "#2B1644",
+              panel: "#47235F",
+              paper: "#FFF4F8",
+              lime: "#FF6FAE",
+              violet: "#B9A4FF"
+            }
+          }
+        }
+      }
+    };
+  </script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      color-scheme: dark;
+      --ink: #2B1644;
+      --panel: #47235F;
+      --paper: #FFF4F8;
+      --lime: #FF6FAE;
+      --violet: #B9A4FF;
+      --gold: #FFD369;
+      --muted: #D8C9E2;
+    }
+
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      min-width: 320px;
+      background:
+        radial-gradient(circle at 15% 0%, rgba(185, 164, 255, .24), transparent 28rem),
+        radial-gradient(circle at 90% 15%, rgba(255, 111, 174, .16), transparent 24rem),
+        var(--ink);
+      color: #FFF9FB;
+      font-family: "DM Sans", ui-sans-serif, system-ui, sans-serif;
+    }
+
+    .noise {
+      pointer-events: none;
+      position: fixed;
+      inset: 0;
+      z-index: 50;
+      opacity: .035;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 180 180' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.7'/%3E%3C/svg%3E");
+    }
+
+    .glass {
+      background: rgba(71, 35, 95, .86);
+      border: 1px solid rgba(255, 255, 255, .1);
+      box-shadow: 0 18px 55px rgba(0, 0, 0, .22);
+      backdrop-filter: blur(18px);
+    }
+
+    .cover-frame {
+      aspect-ratio: 3 / 4;
+      isolation: isolate;
+      overflow: hidden;
+      position: relative;
+      background: linear-gradient(145deg, #824C9F, #2B1644);
+    }
+
+    .cover-image {
+      height: 100%;
+      width: 100%;
+      object-fit: cover;
+      transition: filter .45s ease, transform .45s ease, opacity .35s ease;
+    }
+
+    .book-card {
+      overflow: hidden;
+      position: relative;
+      border: 1px solid rgba(255, 255, 255, .1);
+      background: rgba(71, 35, 95, .9);
+      box-shadow: 0 15px 38px rgba(0, 0, 0, .2);
+      transition: transform .3s ease, border-color .3s ease, box-shadow .3s ease;
+    }
+
+    .book-card:hover {
+      transform: translateY(-4px);
+      border-color: rgba(255, 111, 174, .6);
+      box-shadow: 0 20px 50px rgba(0, 0, 0, .3);
+    }
+
+    .book-card.is-locked .cover-image {
+      filter: grayscale(1) brightness(.48);
+      transform: scale(1.02);
+    }
+
+    .book-card.is-locked .cover-wash {
+      opacity: .48;
+    }
+
+    .cover-wash {
+      position: absolute;
+      inset: 0;
+      z-index: 1;
+      background: linear-gradient(180deg, rgba(43, 22, 68, .12), rgba(43, 22, 68, .78));
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity .45s ease;
+    }
+
+    .cover-fallback {
+      align-items: center;
+      background:
+        radial-gradient(circle at 30% 25%, rgba(255, 211, 105, .22), transparent 30%),
+        linear-gradient(145deg, #824C9F, #2B1644);
+      color: #FFF7F4;
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+      justify-content: center;
+      padding: 1rem;
+      text-align: center;
+      width: 100%;
+    }
+
+    .cover-fallback small {
+      color: var(--gold);
+      font-size: .65rem;
+      letter-spacing: .18em;
+      margin-bottom: .8rem;
+      text-transform: uppercase;
+    }
+
+    .cover-fallback strong {
+      font-family: "Space Grotesk", sans-serif;
+      font-size: clamp(1rem, 3vw, 1.6rem);
+      line-height: 1.05;
+    }
+
+    .star-field {
+      inset: 0;
+      pointer-events: none;
+      position: absolute;
+      z-index: 4;
+    }
+
+    .star {
+      color: var(--gold);
+      filter: drop-shadow(0 0 8px rgba(255, 211, 105, .95));
+      opacity: 0;
+      position: absolute;
+      transform: scale(0);
+    }
+
+    .star:nth-child(1) { left: 17%; top: 26%; }
+    .star:nth-child(2) { left: 74%; top: 20%; font-size: 1.3rem; }
+    .star:nth-child(3) { left: 29%; top: 62%; font-size: .8rem; }
+    .star:nth-child(4) { left: 79%; top: 68%; font-size: 1.1rem; }
+    .star:nth-child(5) { left: 50%; top: 39%; font-size: .75rem; }
+
+    .book-card.is-animating {
+      animation: unlock-card .95s cubic-bezier(.2,.75,.25,1) both;
+    }
+
+    .book-card.is-animating .star {
+      animation: star-pop .95s cubic-bezier(.2,.75,.25,1) both;
+    }
+
+    .book-card.is-animating .star:nth-child(2) { animation-delay: .06s; }
+    .book-card.is-animating .star:nth-child(3) { animation-delay: .12s; }
+    .book-card.is-animating .star:nth-child(4) { animation-delay: .18s; }
+    .book-card.is-animating .star:nth-child(5) { animation-delay: .24s; }
+
+    @keyframes unlock-card {
+      0% { box-shadow: 0 15px 38px rgba(0, 0, 0, .2); }
+      35% { box-shadow: 0 0 0 5px rgba(255, 111, 174, .22), 0 0 42px rgba(255, 211, 105, .38); }
+      100% { box-shadow: 0 15px 38px rgba(0, 0, 0, .2); }
+    }
+
+    @keyframes star-pop {
+      0% { opacity: 0; transform: translate(0, 12px) scale(0); }
+      32% { opacity: 1; transform: translate(0, 0) scale(1.25); }
+      100% { opacity: 0; transform: translate(0, -18px) scale(.72); }
+    }
+
+    .selection-panel {
+      display: none;
+    }
+
+    .selection-panel.is-open {
+      display: block;
+    }
+
+    .selection-list::-webkit-scrollbar { width: 7px; }
+    .selection-list::-webkit-scrollbar-thumb {
+      background: rgba(255, 111, 174, .46);
+      border-radius: 999px;
+    }
+
+    .selection-item {
+      border: 1px solid transparent;
+      transition: background .2s ease, border-color .2s ease;
+    }
+
+    .selection-item:hover {
+      background: rgba(255, 255, 255, .06);
+      border-color: rgba(255, 255, 255, .1);
+    }
+
+    .selection-item input {
+      accent-color: var(--lime);
+    }
+
+    .focus-ring:focus-visible,
+    button:focus-visible,
+    input:focus-visible {
+      outline: 3px solid rgba(255, 211, 105, .9);
+      outline-offset: 3px;
+    }
+
+    .progress-track {
+      background: rgba(255, 255, 255, .1);
+      height: .72rem;
+      overflow: hidden;
+    }
+
+    .progress-fill {
+      background: linear-gradient(90deg, var(--lime), var(--gold), var(--violet));
+      box-shadow: 0 0 24px rgba(255, 111, 174, .48);
+      height: 100%;
+      min-width: 0;
+      transition: width .55s cubic-bezier(.2,.75,.25,1);
+    }
+
+    .view-filter {
+      border: 1px solid rgba(255, 255, 255, .1);
+      color: #D8C9E2;
+      transition: background .2s ease, border-color .2s ease, color .2s ease, transform .2s ease;
+    }
+
+    .view-filter:hover { border-color: rgba(255, 111, 174, .45); color: #FFF9FB; }
+    .view-filter.is-active {
+      background: var(--lime);
+      border-color: transparent;
+      color: var(--ink);
+      box-shadow: 0 0 18px rgba(255, 111, 174, .24);
+    }
+
+    .view-filter:active { transform: scale(.97); }
+
+    @media (min-width: 640px) {
+      .book-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    }
+
+    @media (min-width: 1024px) {
+      .selection-panel { display: block !important; }
+      #selection-toggle { display: none; }
+      .book-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+    }
+
+    @media (min-width: 1280px) {
+      .book-grid { grid-template-columns: repeat(5, minmax(0, 1fr)); }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      html { scroll-behavior: auto; }
+      *, *::before, *::after {
+        animation-duration: .01ms !important;
+        animation-iteration-count: 1 !important;
+        scroll-behavior: auto !important;
+        transition-duration: .01ms !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="noise" aria-hidden="true"></div>
+  <div class="relative z-10">
+    <header class="mx-auto max-w-7xl px-4 pb-8 pt-6 sm:px-6 sm:pb-12 lg:px-8">
+      <nav class="flex items-center justify-between gap-4" aria-label="Navegación principal">
+        <a class="focus-ring inline-flex items-center gap-3 rounded-full" href="#top">
+          <span class="grid h-10 w-10 place-items-center rounded-2xl bg-lime text-ink shadow-[0_0_24px_rgba(216,243,106,.28)]">
+            <span class="font-display text-xl font-bold">✦</span>
+          </span>
+          <span class="font-display text-sm font-semibold tracking-tight text-white sm:text-base">Mi estantería Disney</span>
+        </a>
+        <span class="rounded-full border border-white/10 bg-white/[.04] px-3 py-1.5 text-xs font-semibold tracking-[.14em] text-slate-300 uppercase">Catálogo personal</span>
+      </nav>
+
+      <div id="top" class="grid gap-8 pt-12 lg:grid-cols-[1.2fr_.8fr] lg:items-end lg:pt-20">
+        <div>
+          <p class="mb-4 flex items-center gap-2 text-xs font-bold tracking-[.2em] text-lime uppercase">
+            <span class="h-px w-8 bg-lime"></span>
+            Colecciona tus historias
+          </p>
+          <h1 class="max-w-3xl font-display text-4xl font-bold leading-[.96] tracking-[-.06em] text-white sm:text-6xl lg:text-7xl">
+            Tu estantería,<br><span class="text-lime">a tu manera.</span>
+          </h1>
+          <p class="mt-6 max-w-xl text-base leading-7 text-slate-300 sm:text-lg">
+            Marca tus novelas, elige qué quieres seguir y convierte cada pendiente en una pequeña victoria.
+          </p>
+        </div>
+
+        <div class="relative min-h-[180px] overflow-hidden rounded-[2rem] border border-white/10 bg-gradient-to-br from-violet/20 via-panel to-lime/10 p-5 sm:min-h-[220px]">
+          <div class="absolute -right-10 -top-10 h-40 w-40 rounded-full bg-violet/20 blur-3xl"></div>
+          <div class="absolute -bottom-10 left-10 h-32 w-32 rounded-full bg-lime/10 blur-3xl"></div>
+          <div class="relative flex h-full flex-col justify-between">
+            <div class="flex items-start justify-between">
+              <span class="text-xs font-semibold tracking-[.18em] text-slate-300 uppercase">Mi colección</span>
+              <span id="total-badge" class="rounded-full bg-white/10 px-2.5 py-1 font-mono text-xs text-lime">93 títulos</span>
+            </div>
+            <div class="flex items-end gap-3">
+              <div class="h-28 w-20 rotate-[-9deg] rounded-lg border border-white/20 bg-gradient-to-br from-[#FFE2EE] to-[#D94181] p-2 shadow-2xl sm:h-36 sm:w-24">
+                <div class="h-full border border-black/10 p-2 text-[8px] font-bold uppercase text-[#4B2C3F]">La Bella<br>y la Bestia</div>
+              </div>
+              <div class="z-10 h-32 w-24 rotate-[4deg] rounded-lg border border-white/20 bg-gradient-to-br from-[#E8DEFF] to-[#8460DA] p-2 shadow-2xl sm:h-40 sm:w-28">
+                <div class="h-full border border-white/20 p-2 text-[8px] font-bold uppercase text-white">Frozen<br><span class="text-lime">II</span></div>
+              </div>
+              <div class="h-24 w-16 rotate-[12deg] rounded-lg border border-white/20 bg-gradient-to-br from-[#FFE6A6] to-[#E77D91] p-2 shadow-2xl sm:h-32 sm:w-20">
+                <div class="h-full border border-white/20 p-2 text-[8px] font-bold uppercase text-white">Tu<br>historia</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <main class="mx-auto max-w-7xl px-4 pb-16 sm:px-6 lg:px-8">
+      <section id="progress-section" class="glass sticky top-0 z-30 rounded-b-[2rem] rounded-t-none p-4 sm:rounded-[2rem] sm:p-6" aria-labelledby="progress-title">
+        <div class="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+          <div>
+            <p class="text-xs font-bold tracking-[.16em] text-violet uppercase">Ritmo de colección</p>
+            <h2 id="progress-title" class="mt-2 font-display text-2xl font-semibold tracking-tight text-white">Tu progreso seleccionado</h2>
+            <p id="progress-copy" class="mt-1 text-sm text-slate-300" aria-live="polite">0 conseguidos · faltan 93 · 93 seleccionados</p>
+          </div>
+          <span id="progress-percent" class="font-display text-4xl font-bold tracking-[-.06em] text-lime">0%</span>
+        </div>
+        <div class="progress-track mt-5 rounded-full" role="progressbar" aria-label="Progreso de libros seleccionados" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+          <div id="progress-bar" class="progress-fill rounded-full" style="width: 0%"></div>
+        </div>
+        <div class="mt-3 flex items-center justify-between text-xs text-slate-400">
+          <span id="progress-left">Aún queda mucho por descubrir</span>
+          <span id="visible-copy">93 visibles</span>
+        </div>
+      </section>
+
+      <section class="mt-5 grid gap-5 lg:grid-cols-[280px_minmax(0,1fr)] lg:items-start">
+        <div class="space-y-4 lg:sticky lg:top-5">
+          <div class="glass rounded-[1.65rem] p-4 sm:p-5">
+            <div class="flex items-center justify-between gap-3">
+              <div>
+                <p class="text-xs font-bold tracking-[.16em] text-slate-400 uppercase">Explora</p>
+                <h2 class="mt-1 font-display text-xl font-semibold text-white">Tu selección</h2>
+              </div>
+              <button id="selection-toggle" class="focus-ring rounded-full border border-white/10 bg-white/[.05] px-3 py-2 text-xs font-bold text-lime transition hover:bg-white/10" type="button" aria-controls="selection-panel" aria-expanded="false">
+                Mostrar
+              </button>
+            </div>
+            <div id="selection-panel" class="selection-panel mt-5">
+              <div class="flex items-center justify-between gap-3">
+                <span id="selection-count" class="text-sm font-semibold text-white">93 seleccionados</span>
+                <span id="owned-count" class="text-xs text-slate-400">0 conseguidos</span>
+              </div>
+              <div class="mt-3 grid grid-cols-2 gap-2">
+                <button id="select-all" class="focus-ring rounded-xl border border-lime/30 bg-lime/10 px-3 py-2 text-xs font-bold text-lime transition hover:bg-lime/20" type="button">Todos</button>
+                <button id="clear-all" class="focus-ring rounded-xl border border-white/10 bg-white/[.05] px-3 py-2 text-xs font-bold text-slate-300 transition hover:bg-white/10" type="button">Limpiar</button>
+              </div>
+              <div class="selection-list mt-4 max-h-[430px] space-y-1 overflow-y-auto pr-1" aria-label="Seleccionar entregas">
+                <div id="selection-list"></div>
+              </div>
+              <p class="mt-4 text-xs leading-5 text-slate-400">Solo las entregas seleccionadas aparecen en tu estantería y cuentan para el progreso.</p>
+            </div>
+          </div>
+
+          <div class="rounded-[1.65rem] border border-lime/20 bg-lime/10 p-4 sm:p-5">
+            <p class="text-sm font-semibold text-lime">Un pequeño ritual</p>
+            <p class="mt-2 text-sm leading-6 text-slate-300">Marca una historia cuando llegue a tus manos. Las estrellas harán el resto.</p>
+          </div>
+        </div>
+
+        <div class="min-w-0">
+          <div class="mb-5 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+            <div>
+              <p class="text-xs font-bold tracking-[.16em] text-slate-400 uppercase">Biblioteca</p>
+              <h2 class="mt-1 font-display text-2xl font-semibold tracking-tight text-white">Tus novelas</h2>
+            </div>
+            <div class="flex w-full flex-col gap-2 sm:w-auto sm:items-end">
+              <label class="relative block w-full sm:w-72">
+                <span class="sr-only">Buscar un libro por nombre</span>
+                <span class="pointer-events-none absolute inset-y-0 left-4 flex items-center text-slate-400">⌕</span>
+                <input id="search-input" class="focus-ring w-full rounded-2xl border border-white/10 bg-panel/80 py-3 pl-11 pr-4 text-sm text-white placeholder:text-slate-500" type="search" placeholder="Buscar un título…" autocomplete="off">
+              </label>
+              <div class="view-filters flex w-full rounded-2xl border border-white/10 bg-panel/60 p-1 sm:w-auto" role="group" aria-label="Filtrar libros por estado">
+                <button class="view-filter is-active flex-1 rounded-xl px-3 py-2 text-xs font-bold sm:flex-none" type="button" data-view-filter="all" aria-pressed="true">Todos <span data-view-count="all">93</span></button>
+                <button class="view-filter flex-1 rounded-xl px-3 py-2 text-xs font-bold sm:flex-none" type="button" data-view-filter="owned" aria-pressed="false">Desbloqueados <span data-view-count="owned">0</span></button>
+                <button class="view-filter flex-1 rounded-xl px-3 py-2 text-xs font-bold sm:flex-none" type="button" data-view-filter="pending" aria-pressed="false">Pendientes <span data-view-count="pending">93</span></button>
+              </div>
+            </div>
+          </div>
+
+          <div id="book-grid" class="book-grid grid grid-cols-2 gap-3 sm:gap-4"></div>
+          <div id="empty-state" class="glass hidden rounded-[1.75rem] p-10 text-center sm:p-16">
+            <span class="mx-auto grid h-14 w-14 place-items-center rounded-2xl bg-lime/10 text-2xl text-lime">✦</span>
+            <h3 id="empty-title" class="mt-5 font-display text-2xl font-semibold text-white">No hay coincidencias</h3>
+            <p id="empty-copy" class="mx-auto mt-2 max-w-sm text-sm leading-6 text-slate-400">Prueba con otro título o vuelve a seleccionar alguna entrega.</p>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="mx-auto flex max-w-7xl flex-col gap-3 border-t border-white/10 px-4 py-8 text-xs text-slate-500 sm:flex-row sm:items-center sm:justify-between sm:px-6 lg:px-8">
+      <span>Catálogo personal · Disney Novelas Inolvidables</span>
+      <a class="focus-ring rounded text-slate-300 underline decoration-white/20 underline-offset-4 hover:text-lime" href="https://www.salvat.com/disney-novelas-inolvidables-315" target="_blank" rel="noreferrer">Ver fuente en Salvat ↗</a>
+    </footer>
+  </div>
+
+  <div id="live-region" class="sr-only" aria-live="polite"></div>
+
+  <script id="catalog-data" type="application/json">[{"numero":1,"titulo":"La Bella y la Bestia","cubierta":"https://www.salvat.com/img/cms/Disney%20Novelas%20Inolvidables/entrega-1-labellaylabestia-plano.png"},{"numero":2,"titulo":"Frozen","cubierta":"https://www.salvat.com/img/cms/Disney%20Novelas%20Inolvidables/entrega-2-frozen-plano.png"},{"numero":3,"titulo":"Blancanieves","cubierta":"https://www.salvat.com/img/cms/Disney%20Novelas%20Inolvidables/entrega_1_blancanieves-plano.png"},{"numero":4,"titulo":"El Rey León","cubierta":"https://www.salvat.com/img/cms/Disney%20Novelas%20Inolvidables/entrega-4-reyleon-plano.png"},{"numero":5,"titulo":"Del Revés","cubierta":"https://www.salvat.com/img/cms/Disney%20Novelas%20Inolvidables/entrega-5-del-reves.png"},{"numero":6,"titulo":"Coco","cubierta":"https://www.salvat.com/img/cms/Disney%20Novelas%20Inolvidables/entrega-6-coco.png"},{"numero":7,"titulo":"La Sirenita","cubierta":"https://www.salvat.com/img/cms/Disney%20Novelas%20Inolvidables/entrega-7-sirenita.png"},{"numero":8,"titulo":"Cenicienta","cubierta":"https://www.salvat.com/img/cms/Disney%20Novelas%20Inolvidables/entrega-8-cenicienta.png"},{"numero":9,"titulo":"101 Dálmatas","cubierta":"https://www.salvat.com/img/cms/Disney%20Novelas%20Inolvidables/entrega-9-101dalmatas.png"},{"numero":10,"titulo":"Mulán","cubierta":"https://www.salvat.com/img/cms/Disney%20Novelas%20Inolvidables/entrega-10mulan.png"},{"numero":11,"titulo":"Vaiana","cubierta":"https://www.salvat.com/img/cms/Disney%20Novelas%20Inolvidables/entrega-11vaiana.png"},{"numero":12,"titulo":"Brave (Indomable)","cubierta":"https://www.salvat.com/img/cms/Disney%20Novelas%20Inolvidables/entrega-12brave.png"},{"numero":13,"titulo":"Encanto","cubierta":"https://www.salvat.com/img/cms/Disney%20Novelas%20Inolvidables/entrega13encanto.png"},{"numero":14,"titulo":"Dumbo","cubierta":"https://www.salvat.com/img/cms/Disney%20Novelas%20Inolvidables/entrega14-dumbo.png"},{"numero":15,"titulo":"Elemental","cubierta":"https://www.salvat.com/img/cms/Disney%20Novelas%20Inolvidables/entrega15-elemental.png"},{"numero":16,"titulo":"Enredados","cubierta":"https://www.salvat.com/img/cms/Disney%20Novelas%20Inolvidables/entrega16-enredados.png"},{"numero":17,"titulo":"Alicia en el País de las Maravillas","cubierta":"https://www.salvat.com/img/cms/Disney%20Novelas%20Inolvidables/entrega17-Alicia.png"},{"numero":18,"titulo":"El Libro de la Selva","cubierta":"https://www.salvat.com/img/cms/Disney%20Novelas%20Inolvidables/entrega18-libro-de-la-selva.png"},{"numero":19,"titulo":"Pinocho","cubierta":"https://www.salvat.com/img/cms/Disney%20Novelas%20Inolvidables/entrega19-pinocho.png"},{"numero":20,"titulo":"Red","cubierta":"https://www.salvat.com/img/cms/Disney%20Novelas%20Inolvidables/entrega20-Red.png"},{"numero":21,"titulo":"Pocahontas","cubierta":"https://www.salvat.com/img/cms/Disney%20Novelas%20Inolvidables/pocahontas%201.png"},{"numero":22,"titulo":"Luca","cubierta":"https://www.salvat.com/img/cms/Disney%20Novelas%20Inolvidables/entrega22-%20luca.png"},{"numero":23,"titulo":"Raya y el Último Dragón","cubierta":"https://www.salvat.com/img/cms/Disney%20Novelas%20Inolvidables/entrega23%20raya.png"},{"numero":24,"titulo":"Bolt","cubierta":"https://www.salvat.com/img/cms/Disney%20Novelas%20Inolvidables/entrega24%20bolt.png"},{"numero":25,"titulo":"Aladdín","cubierta":"https://www.salvat.com/img/cms/Disney%20Novelas%20Inolvidables/entrega25-aladdin.png"},{"numero":26,"titulo":"Toy Story","cubierta":"https://www.salvat.com/img/cms/Disney%20Novelas%20Inolvidables/entrega26-toystory.png"},{"numero":27,"titulo":"Soul","cubierta":"https://www.salvat.com/img/cms/Disney%20Novelas%20Inolvidables/entrega27%20soul.png"},{"numero":28,"titulo":"Up","cubierta":"https://www.salvat.com/img/cms/Disney%20Novelas%20Inolvidables/entrega28.png"},{"numero":29,"titulo":"Lilo y Stitch","cubierta":"https://www.salvat.com/img/cms/Disney%20Novelas%20Inolvidables/entrega29-lilo.png"},{"numero":30,"titulo":"Bambi","cubierta":"https://www.salvat.com/img/cms/Disney%20Novelas%20Inolvidables/30_bambi.png"},{"numero":31,"titulo":"Tiana y el Sapo","cubierta":"https://www.salvat.com/img/cms/Disney%20Novelas%20Inolvidables/31_tiana_y_el_sapo.png"},{"numero":32,"titulo":"Los Increíbles","cubierta":"https://www.salvat.com/img/cms/Disney%20Novelas%20Inolvidables/32_los_increibles.png"},{"numero":33,"titulo":"Ratatouille","cubierta":"https://www.salvat.com/img/cms/Disney%20Novelas%20Inolvidables/33-ratatouile.png"},{"numero":34,"titulo":"La Bella Durmiente","cubierta":"https://www.salvat.com/img/cms/Disney%20Novelas%20Inolvidables/34_belladurmiente.png"},{"numero":35,"titulo":"Monstruos, S.A.","cubierta":"https://www.salvat.com/img/cms/Disney%20Novelas%20Inolvidables/35_monstruoSA.png"},{"numero":36,"titulo":"Wall-E","cubierta":"https://www.salvat.com/img/cms/Disney%20Novelas%20Inolvidables/36_walle.png"},{"numero":37,"titulo":"Cars","cubierta":"https://www.salvat.com/img/cms/Disney%20Novelas%20Inolvidables/37-cars.png"},{"numero":38,"titulo":"El Jorobado de Notre Dame","cubierta":"https://www.salvat.com/img/cms/Disney%20Novelas%20Inolvidables/38-jorobado-de-notredame.png"},{"numero":39,"titulo":"El Viaje de Arlo","cubierta":"https://www.salvat.com/img/cms/Disney%20Novelas%20Inolvidables/39_viaje-de-arlo.png"},{"numero":40,"titulo":"Zootrópolis","cubierta":"https://www.salvat.com/img/cms/Disney%20Novelas%20Inolvidables/40%20-%20zootropolis.png"},{"numero":41,"titulo":"Big Hero 6","cubierta":"https://www.salvat.com/img/cms/Disney%20Novelas%20Inolvidables/41-big%20hero.png"},{"numero":42,"titulo":"Wish","cubierta":"https://www.salvat.com/img/cms/Disney%20Novelas%20Inolvidables/42-Wish.png"},{"numero":43,"titulo":"Buscando a Nemo","cubierta":"https://www.salvat.com/img/cms/Disney%20Novelas%20Inolvidables/43_nemo.png"},{"numero":44,"titulo":"La Dama y el Vagabundo","cubierta":"https://www.salvat.com/img/cms/Disney%20Novelas%20Inolvidables/44-la-dama-y-el-vagabundo.png"},{"numero":45,"titulo":"Lightyear","cubierta":"https://www.salvat.com/img/cms/Disney%20Novelas%20Inolvidables/45-lightyear.png"},{"numero":46,"titulo":"Onward","cubierta":"https://www.salvat.com/img/cms/Disney%20Novelas%20Inolvidables/onward.png"},{"numero":47,"titulo":"Buscando a Dory","cubierta":"https://www.salvat.com/img/cms/Disney%20Novelas%20Inolvidables/BUscando%20a%20dory.png"},{"numero":48,"titulo":"Mundo Extraño","cubierta":"https://www.salvat.com/img/cms/Disney%20Novelas%20Inolvidables/Mundo%20extran%CC%83o.png"},{"numero":49,"titulo":"Tod y Toby","cubierta":"https://www.salvat.com/img/cms/Disney%20Novelas%20Inolvidables/Tod%20y%20toby.png"},{"numero":50,"titulo":"Robin Hood","cubierta":"https://www.salvat.com/img/cms/Disney%20Novelas%20Inolvidables/Robin%20hood.png"},{"numero":51,"titulo":"Hércules","cubierta":"https://www.salvat.com/img/cms/Disney%20Novelas%20Inolvidables/Hercules.png"},{"numero":52,"titulo":"Hermano Oso","cubierta":"https://www.salvat.com/img/cms/Disney%20Novelas%20Inolvidables/Hermano%20oso.png"},{"numero":53,"titulo":"Peter Pan","cubierta":"https://www.salvat.com/img/cms/Disney%20Novelas%20Inolvidables/Peter%20pan.png"},{"numero":54,"titulo":"Frozen II","cubierta":"https://www.salvat.com/img/cms/Disney%20Novelas%20Inolvidables/Frozen_II.png"},{"numero":55,"titulo":"El Emperador y sus Locuras","cubierta":"https://www.salvat.com/img/cms/Disney%20Novelas%20Inolvidables/Emperador.png"},{"numero":56,"titulo":"Toy Story 2","cubierta":"https://www.salvat.com/img/cms/Disney%20Novelas%20Inolvidables/Toystory.png"},{"numero":57,"titulo":"Merlín","cubierta":"https://www.salvat.com/img/cms/Disney%20Novelas%20Inolvidables/Merlin.png"},{"numero":58,"titulo":"Los Aristogatos","cubierta":"https://www.salvat.com/img/cms/Disney%20Novelas%20Inolvidables/Aristogatos.png"},{"numero":59,"titulo":"Vaiana 2","cubierta":"https://www.salvat.com/img/cms/Disney%20Novelas%20Inolvidables/Vaiana2.png"},{"numero":60,"titulo":"El Planeta del Tesoro","cubierta":"https://www.salvat.com/img/cms/Disney%20Novelas%20Inolvidables/planetatestoro.png"},{"numero":61,"titulo":"Bichos","cubierta":"https://www.salvat.com/img/cms/Disney%20Novelas%20Inolvidables/bichos.png"},{"numero":62,"titulo":"Los Increíbles 2","cubierta":"https://www.salvat.com/img/cms/Disney%20Novelas%20Inolvidables/los%20increibles%202.png"},{"numero":63,"titulo":"Atlantis","cubierta":"https://www.salvat.com/img/cms/Disney%20Novelas%20Inolvidables/atlantis.png"},{"numero":64,"titulo":"Elio","cubierta":"https://www.salvat.com/img/cms/Disney%20Novelas%20Inolvidables/elio.png"},{"numero":65,"titulo":"Oliver y su Pandilla","cubierta":"https://www.salvat.com/img/cms/Disney%20Novelas%20Inolvidables/oliver.png"},{"numero":66,"titulo":"¡Rompe Ralph!","cubierta":"https://www.salvat.com/img/cms/Disney%20Novelas%20Inolvidables/Ralph.png"},{"numero":67,"titulo":"Cars 2","cubierta":"https://www.salvat.com/img/cms/Disney%20Novelas%20Inolvidables/Cars%202.png"},{"numero":68,"titulo":"Los Rescatadores","cubierta":"https://www.salvat.com/img/cms/Disney%20Novelas%20Inolvidables/los%20rescatadores.png"},{"numero":69,"titulo":"Monstruos University","cubierta":"https://www.salvat.com/img/cms/Disney%20Novelas%20Inolvidables/mu.png"},{"numero":70,"titulo":"Aviones","cubierta":"https://www.salvat.com/img/cms/Disney%20Novelas%20Inolvidables/aviones.png"},{"numero":71,"titulo":"Los Rescatadores en Cangurolandia","cubierta":"https://www.salvat.com/img/cms/Disney%20Novelas%20Inolvidables/Rscatadores%20en%20cangurolandia.png"},{"numero":72,"titulo":"Toy Story 3","cubierta":"https://www.salvat.com/img/cms/Disney%20Novelas%20Inolvidables/Toy%20Story%203.png"},{"numero":73,"titulo":"Del Revés 2","cubierta":"https://www.salvat.com/img/cms/Disney%20Novelas%20Inolvidables/InsideOut%202.png"},{"numero":74,"titulo":"Cars 3","cubierta":"https://www.salvat.com/img/cms/Disney%20Novelas%20Inolvidables/cars%203.png"},{"numero":75,"titulo":"La Sirenita 2","cubierta":"https://www.salvat.com/img/cms/Disney%20Novelas%20Inolvidables/Sirenita%202.png"},{"numero":76,"titulo":"Toy Story 4","cubierta":"https://www.salvat.com/img/cms/Disney%20Novelas%20Inolvidables/Toy%20Story%204.png"},{"numero":77,"titulo":"El Rey León 3","cubierta":"https://www.salvat.com/img/cms/Disney%20Novelas%20Inolvidables/Rey%20Leon%203.png"},{"numero":78,"titulo":"Campanilla: Hadas y Piratas","cubierta":"https://www.salvat.com/img/cms/Disney%20Novelas%20Inolvidables/Campanilla_Hada%20sy%20piratas.png"},{"numero":79,"titulo":"Pocahontas 2","cubierta":"https://www.salvat.com/img/cms/Disney%20Novelas%20Inolvidables/Pocahontas%202.png"},{"numero":80,"titulo":"Cenicienta","cubierta":"https://www.salvat.com/img/cms/Disney%20Novelas%20Inolvidables/Mockuup/80.png"},{"numero":81,"titulo":"Mulán","cubierta":"https://www.salvat.com/img/cms/Disney%20Novelas%20Inolvidables/Mockuup/81.png"},{"numero":82,"titulo":"Campanilla y el Secreto de las Hadas","cubierta":"https://www.salvat.com/img/cms/Disney%20Novelas%20Inolvidables/Mockuup/82.png"},{"numero":83,"titulo":"El Jorobado de Notre Dame","cubierta":"https://www.salvat.com/img/cms/Disney%20Novelas%20Inolvidables/Mockuup/83.png"},{"numero":84,"titulo":"Maléfica","cubierta":"https://www.salvat.com/img/cms/Disney%20Novelas%20Inolvidables/Mockuup/84.png"},{"numero":85,"titulo":"Christopher Robin","cubierta":"https://www.salvat.com/img/cms/Disney%20Novelas%20Inolvidables/Mockuup/85.png"},{"numero":86,"titulo":"El Rey León","cubierta":"https://www.salvat.com/img/cms/Disney%20Novelas%20Inolvidables/Mockuup/86.png"},{"numero":87,"titulo":"101 Dálmatas II","cubierta":"https://www.salvat.com/img/cms/Disney%20Novelas%20Inolvidables/Mockuup/87.png"},{"numero":88,"titulo":"Lilo y Stitch","cubierta":"https://www.salvat.com/img/cms/Disney%20Novelas%20Inolvidables/Mockuup/88.png"},{"numero":89,"titulo":"Zootrópolis","cubierta":"https://www.salvat.com/img/cms/Disney%20Novelas%20Inolvidables/Mockuup/89.png"},{"numero":90,"titulo":"Hermano Oso","cubierta":"https://www.salvat.com/img/cms/Disney%20Novelas%20Inolvidables/Mockuup/90.png"},{"numero":91,"titulo":"La Sirenita","cubierta":"https://www.salvat.com/img/cms/Disney%20Novelas%20Inolvidables/Mockuup/91.png"},{"numero":92,"titulo":"Mufasa: El Rey León","cubierta":"https://www.salvat.com/img/cms/Disney%20Novelas%20Inolvidables/Mockuup/92.png"},{"numero":93,"titulo":"Stitch","cubierta":"https://www.salvat.com/img/cms/Disney%20Novelas%20Inolvidables/Mockuup/93.png"}]</script>
+  <script>
+    const STORAGE_KEY = "disney-novelas-tracker-v1";
+    const catalog = JSON.parse(document.getElementById("catalog-data").textContent);
+    const catalogIds = new Set(catalog.map(function (book) { return book.numero; }));
+    let state = {
+      query: "",
+      view: "all",
+      selectedIds: new Set(catalog.map(function (book) { return book.numero; })),
+      ownedIds: new Set()
+    };
+    let panelOpen = false;
+    let pendingAnimationId = null;
+
+    const elements = {
+      search: document.getElementById("search-input"),
+      selectionPanel: document.getElementById("selection-panel"),
+      selectionToggle: document.getElementById("selection-toggle"),
+      selectionList: document.getElementById("selection-list"),
+      selectionCount: document.getElementById("selection-count"),
+      ownedCount: document.getElementById("owned-count"),
+      selectAll: document.getElementById("select-all"),
+      clearAll: document.getElementById("clear-all"),
+      bookGrid: document.getElementById("book-grid"),
+      emptyState: document.getElementById("empty-state"),
+      emptyTitle: document.getElementById("empty-title"),
+      emptyCopy: document.getElementById("empty-copy"),
+      progressBar: document.getElementById("progress-bar"),
+      progressTrack: document.querySelector('[role="progressbar"]'),
+      progressCopy: document.getElementById("progress-copy"),
+      progressPercent: document.getElementById("progress-percent"),
+      progressLeft: document.getElementById("progress-left"),
+      visibleCopy: document.getElementById("visible-copy"),
+      liveRegion: document.getElementById("live-region"),
+      viewFilters: Array.from(document.querySelectorAll("[data-view-filter]")),
+      viewCounts: Array.from(document.querySelectorAll("[data-view-count]"))
+    };
+
+    function normalizeText(value) {
+      return String(value || "")
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .toLowerCase()
+        .trim();
+    }
+
+    function escapeHtml(value) {
+      return String(value)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+    }
+
+    function computeProgress() {
+      const selected = state.selectedIds.size;
+      const owned = Array.from(state.ownedIds).filter(function (id) {
+        return state.selectedIds.has(id);
+      }).length;
+      return {
+        selected: selected,
+        owned: owned,
+        remaining: selected - owned,
+        percent: selected ? Math.round((owned / selected) * 100) : 0
+      };
+    }
+
+    function saveState() {
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify({
+          selectedIds: Array.from(state.selectedIds),
+          ownedIds: Array.from(state.ownedIds)
+        }));
+      } catch (error) {
+        // La interfaz sigue funcionando aunque el almacenamiento local esté bloqueado.
+      }
+    }
+
+    function loadState() {
+      try {
+        const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || "null");
+        if (!saved || !Array.isArray(saved.selectedIds) || !Array.isArray(saved.ownedIds)) return;
+        const selected = saved.selectedIds.filter(function (id) { return catalogIds.has(id); });
+        const owned = saved.ownedIds.filter(function (id) { return catalogIds.has(id); });
+        state.selectedIds = new Set(selected);
+        state.ownedIds = new Set(owned);
+      } catch (error) {
+        // Se mantiene el estado inicial si los datos guardados no son válidos.
+      }
+    }
+
+    function bookCard(book) {
+      const owned = state.ownedIds.has(book.numero);
+      const id = String(book.numero);
+      const title = escapeHtml(book.titulo);
+      const animationClass = pendingAnimationId === book.numero ? " is-animating" : "";
+      return [
+        '<article class="book-card cursor-pointer', owned ? ' is-owned' : ' is-locked', animationClass, '" data-card-id="', id, '" tabindex="0" role="button" aria-pressed="', String(owned), '" aria-label="', owned ? 'Marcar ' + title + ' como pendiente' : 'Marcar ' + title + ' como conseguido', '">',
+          '<div class="cover-frame">',
+            '<img class="cover-image" src="', escapeHtml(book.cubierta), '" alt="Cubierta de ', title, '" loading="lazy" onerror="handleImageError(this)">',
+            '<div class="cover-fallback hidden" aria-hidden="true"><small>Entrega ', String(book.numero).padStart(2, "0"), '</small><strong>', title, '</strong></div>',
+            '<div class="cover-wash" aria-hidden="true"></div>',
+            '<div class="absolute left-3 top-3 z-[3] rounded-full border border-white/20 bg-ink/70 px-2 py-1 font-mono text-[10px] font-bold tracking-[.12em] text-white backdrop-blur-sm">#', String(book.numero).padStart(3, "0"), '</div>',
+            owned ? '<div class="absolute right-3 top-3 z-[3] rounded-full bg-lime px-2 py-1 text-[10px] font-bold text-ink shadow-[0_0_18px_rgba(216,243,106,.35)]">✓ CONSEGUIDO</div>' : '<div class="absolute right-3 top-3 z-[3] rounded-full border border-white/20 bg-ink/70 px-2 py-1 text-[10px] font-bold tracking-[.08em] text-slate-200 backdrop-blur-sm">PENDIENTE</div>',
+            '<div class="star-field" aria-hidden="true"><span class="star">✦</span><span class="star">✦</span><span class="star">✦</span><span class="star">✦</span><span class="star">✦</span></div>',
+          '</div>',
+          '<div class="p-3 sm:p-4">',
+            '<h3 class="min-h-[2.65rem] font-display text-sm font-semibold leading-tight text-white sm:text-base">', title, '</h3>',
+            '<button class="owned-toggle focus-ring mt-3 inline-flex w-full items-center justify-center gap-2 rounded-xl border px-3 py-2.5 text-xs font-bold transition ', owned ? 'border-lime/30 bg-lime/10 text-lime hover:bg-lime/20' : 'border-white/10 bg-white/[.05] text-slate-300 hover:bg-white/10', '" type="button" data-owned-id="', id, '" aria-pressed="', String(owned), '" aria-label="', owned ? 'Marcar ' + title + ' como pendiente' : 'Marcar ' + title + ' como conseguido', '">',
+              owned ? '✓ En mi colección' : 'Desbloquear historia',
+            '</button>',
+          '</div>',
+        '</article>'
+      ].join("");
+    }
+
+    function selectionItem(book) {
+      const checked = state.selectedIds.has(book.numero);
+      return [
+        '<label class="selection-item flex cursor-pointer items-center gap-3 rounded-xl px-2.5 py-2">',
+          '<input class="h-4 w-4 shrink-0" type="checkbox" data-select-id="', String(book.numero), '"', checked ? " checked" : "", ' aria-label="Mostrar ', escapeHtml(book.titulo), '">',
+          '<span class="min-w-0 flex-1 truncate text-xs ', checked ? 'text-slate-200' : 'text-slate-500', '"><span class="mr-1 font-mono text-[10px] text-slate-500">#', String(book.numero).padStart(3, "0"), '</span>', escapeHtml(book.titulo), '</span>',
+          state.ownedIds.has(book.numero) ? '<span class="text-xs text-lime" aria-label="Conseguido">✓</span>' : "",
+        '</label>'
+      ].join("");
+    }
+
+    function renderSelection() {
+      elements.selectionList.innerHTML = catalog.map(selectionItem).join("");
+      elements.selectionCount.textContent = state.selectedIds.size + " seleccionados";
+      const ownedSelected = computeProgress().owned;
+      elements.ownedCount.textContent = ownedSelected + " conseguidos";
+    }
+
+    function renderProgress(visibleCount) {
+      const progress = computeProgress();
+      elements.progressCopy.textContent = progress.owned + " conseguidos · faltan " + progress.remaining + " · " + progress.selected + " seleccionados";
+      elements.progressPercent.textContent = progress.percent + "%";
+      elements.progressBar.style.width = progress.percent + "%";
+      elements.progressTrack.setAttribute("aria-valuenow", String(progress.percent));
+      elements.visibleCopy.textContent = visibleCount + (visibleCount === 1 ? " visible" : " visibles");
+      if (progress.selected === 0) {
+        elements.progressLeft.textContent = "Selecciona alguna entrega para empezar";
+      } else if (progress.remaining === 0) {
+        elements.progressLeft.textContent = "Colección al completo ✦";
+      } else {
+        elements.progressLeft.textContent = "Quedan " + progress.remaining + " historias por descubrir";
+      }
+    }
+
+    function renderViewFilters() {
+      const selectedBooks = catalog.filter(function (book) { return state.selectedIds.has(book.numero); });
+      const counts = {
+        all: selectedBooks.length,
+        owned: selectedBooks.filter(function (book) { return state.ownedIds.has(book.numero); }).length,
+        pending: selectedBooks.filter(function (book) { return !state.ownedIds.has(book.numero); }).length
+      };
+      elements.viewFilters.forEach(function (button) {
+        const active = button.dataset.viewFilter === state.view;
+        button.classList.toggle("is-active", active);
+        button.setAttribute("aria-pressed", String(active));
+      });
+      elements.viewCounts.forEach(function (counter) {
+        counter.textContent = String(counts[counter.dataset.viewCount]);
+      });
+    }
+
+    function render() {
+      const query = normalizeText(state.query);
+      const visibleBooks = catalog.filter(function (book) {
+        const matchesView = state.view === "all" || (state.view === "owned" && state.ownedIds.has(book.numero)) || (state.view === "pending" && !state.ownedIds.has(book.numero));
+        return state.selectedIds.has(book.numero) && matchesView && normalizeText(book.titulo).includes(query);
+      });
+      elements.bookGrid.innerHTML = visibleBooks.map(bookCard).join("");
+      elements.emptyState.classList.toggle("hidden", visibleBooks.length > 0);
+      if (!visibleBooks.length) {
+        const noSelection = state.selectedIds.size === 0;
+        elements.emptyTitle.textContent = noSelection ? "Tu estantería está vacía" : "No hay coincidencias";
+        elements.emptyCopy.textContent = noSelection ? "Selecciona las entregas que quieras seguir desde el panel de selección." : "Prueba con otro título o revisa la selección activa.";
+      }
+      elements.search.value = state.query;
+      renderSelection();
+      renderViewFilters();
+      renderProgress(visibleBooks.length);
+      if (pendingAnimationId !== null) {
+        const animatedCard = document.querySelector('[data-card-id="' + pendingAnimationId + '"]');
+        if (animatedCard) {
+          window.setTimeout(function () {
+            animatedCard.classList.remove("is-animating");
+          }, 1100);
+        }
+        pendingAnimationId = null;
+      }
+    }
+
+    function announce(message) {
+      elements.liveRegion.textContent = "";
+      window.setTimeout(function () { elements.liveRegion.textContent = message; }, 20);
+    }
+
+    function handleImageError(image) {
+      image.classList.add("hidden");
+      const fallback = image.nextElementSibling;
+      if (fallback) fallback.classList.remove("hidden");
+    }
+
+    function setSelection(ids) {
+      state.selectedIds = new Set(ids);
+      saveState();
+      render();
+    }
+
+    elements.search.addEventListener("input", function (event) {
+      state.query = event.target.value;
+      render();
+    });
+
+    elements.viewFilters.forEach(function (button) {
+      button.addEventListener("click", function () {
+        state.view = button.dataset.viewFilter;
+        render();
+        announce("Filtro aplicado: " + button.textContent.trim());
+      });
+    });
+
+    elements.selectionToggle.addEventListener("click", function () {
+      panelOpen = !panelOpen;
+      elements.selectionPanel.classList.toggle("is-open", panelOpen);
+      elements.selectionToggle.setAttribute("aria-expanded", String(panelOpen));
+      elements.selectionToggle.textContent = panelOpen ? "Ocultar" : "Mostrar";
+    });
+
+    elements.selectAll.addEventListener("click", function () {
+      setSelection(catalog.map(function (book) { return book.numero; }));
+      announce("Se han seleccionado las " + catalog.length + " entregas.");
+    });
+
+    elements.clearAll.addEventListener("click", function () {
+      setSelection([]);
+      announce("Se ha limpiado la selección.");
+    });
+
+    elements.selectionList.addEventListener("change", function (event) {
+      const checkbox = event.target.closest("[data-select-id]");
+      if (!checkbox) return;
+      const id = Number(checkbox.dataset.selectId);
+      if (checkbox.checked) state.selectedIds.add(id);
+      else state.selectedIds.delete(id);
+      saveState();
+      render();
+      announce(checkbox.checked ? "Entrega añadida a la estantería." : "Entrega retirada de la estantería.");
+    });
+
+    function toggleOwned(id) {
+      const book = catalog.find(function (item) { return item.numero === id; });
+      const wasOwned = state.ownedIds.has(id);
+      if (wasOwned) {
+        state.ownedIds.delete(id);
+      } else {
+        state.ownedIds.add(id);
+        pendingAnimationId = id;
+      }
+      saveState();
+      render();
+      if (book) announce(wasOwned ? book.titulo + " vuelve a estar pendiente." : book.titulo + " desbloqueado.");
+    }
+
+    elements.bookGrid.addEventListener("click", function (event) {
+      const button = event.target.closest("[data-owned-id]");
+      if (button) {
+        toggleOwned(Number(button.dataset.ownedId));
+        return;
+      }
+      const card = event.target.closest("[data-card-id]");
+      if (!card || event.target.closest("button, a, input, label")) return;
+      toggleOwned(Number(card.dataset.cardId));
+    });
+
+    elements.bookGrid.addEventListener("keydown", function (event) {
+      const card = event.target.closest("[data-card-id]");
+      if (!card || event.target.closest("button, a, input, label")) return;
+      if (event.key === "Enter" || event.key === " ") {
+        event.preventDefault();
+        toggleOwned(Number(card.dataset.cardId));
+      }
+    });
+
+    loadState();
+    render();
+  </script>
+</body>
+</html>
