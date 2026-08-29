@@ -95,6 +95,20 @@
       transition: transform .3s ease, border-color .3s ease, box-shadow .3s ease;
     }
 
+    .book-card.card-enter {
+      opacity: 0;
+      translate: 0 18px;
+      transition: opacity .5s ease, translate .5s cubic-bezier(.2, .75, .25, 1), transform .3s ease, border-color .3s ease, box-shadow .3s ease;
+    }
+
+    .book-card.card-enter:nth-child(3n + 2) { transition-delay: .06s; }
+    .book-card.card-enter:nth-child(3n + 3) { transition-delay: .12s; }
+
+    .book-card.card-enter.is-visible {
+      opacity: 1;
+      translate: 0 0;
+    }
+
     .book-card:hover {
       transform: translateY(-4px);
       border-color: rgba(255, 111, 174, .6);
@@ -282,6 +296,10 @@
         scroll-behavior: auto !important;
         transition-duration: .01ms !important;
       }
+      .book-card.card-enter {
+        opacity: 1;
+        translate: none;
+      }
     }
   </style>
 </head>
@@ -441,6 +459,7 @@
     };
     let panelOpen = false;
     let pendingAnimationId = null;
+    let cardObserver = null;
 
     const elements = {
       search: document.getElementById("search-input"),
@@ -526,7 +545,7 @@
       const title = escapeHtml(book.titulo);
       const animationClass = pendingAnimationId === book.numero ? " is-animating" : "";
       return [
-        '<article class="book-card cursor-pointer', owned ? ' is-owned' : ' is-locked', animationClass, '" data-card-id="', id, '" tabindex="0" role="button" aria-pressed="', String(owned), '" aria-label="', owned ? 'Marcar ' + title + ' como pendiente' : 'Marcar ' + title + ' como conseguido', '">',
+        '<article class="book-card card-enter cursor-pointer', owned ? ' is-owned' : ' is-locked', animationClass, '" data-card-id="', id, '" tabindex="0" role="button" aria-pressed="', String(owned), '" aria-label="', owned ? 'Marcar ' + title + ' como pendiente' : 'Marcar ' + title + ' como conseguido', '">',
           '<div class="cover-frame">',
             '<img class="cover-image" src="', escapeHtml(book.cubierta), '" alt="Cubierta de ', title, '" loading="lazy" onerror="handleImageError(this)">',
             '<div class="cover-fallback hidden" aria-hidden="true"><small>Entrega ', String(book.numero).padStart(2, "0"), '</small><strong>', title, '</strong></div>',
@@ -603,6 +622,7 @@
         return state.selectedIds.has(book.numero) && matchesView && normalizeText(book.titulo).includes(query);
       });
       elements.bookGrid.innerHTML = visibleBooks.map(bookCard).join("");
+      observeCards();
       elements.emptyState.classList.toggle("hidden", visibleBooks.length > 0);
       if (!visibleBooks.length) {
         const noSelection = state.selectedIds.size === 0;
@@ -620,6 +640,49 @@
             animatedCard.classList.remove("is-animating");
           }, 1100);
         }
+        pendingAnimationId = null;
+      }
+    }
+
+    function observeCards() {
+      if (cardObserver) cardObserver.disconnect();
+      const cards = Array.from(elements.bookGrid.querySelectorAll(".card-enter"));
+      if (typeof window.IntersectionObserver !== "function") {
+        cards.forEach(markCardVisible);
+        return;
+      }
+      cardObserver = new IntersectionObserver(function (entries, observer) {
+        entries.forEach(function (entry) {
+          if (!entry.isIntersecting) return;
+          markCardVisible(entry.target);
+          observer.unobserve(entry.target);
+        });
+      }, { rootMargin: "0px 0px -8% 0px", threshold: 0.08 });
+      cards.forEach(function (card) { cardObserver.observe(card); });
+    }
+
+    function markCardVisible(card) {
+      if (card && !(" " + card.className + " ").includes(" is-visible ")) {
+        card.className += " is-visible";
+      }
+    }
+
+    function refreshOwnedCard(id) {
+      const card = elements.bookGrid.querySelector('[data-card-id="' + id + '"]');
+      if (!card) {
+        render();
+        return;
+      }
+      card.outerHTML = bookCard(catalog.find(function (book) { return book.numero === id; }));
+      renderSelection();
+      renderViewFilters();
+      renderProgress(elements.bookGrid.querySelectorAll("[data-card-id]").length);
+      const updatedCard = elements.bookGrid.querySelector('[data-card-id="' + id + '"]');
+      markCardVisible(updatedCard);
+      if (updatedCard && pendingAnimationId === id) {
+        window.setTimeout(function () {
+          updatedCard.classList.remove("is-animating");
+        }, 1100);
         pendingAnimationId = null;
       }
     }
@@ -692,7 +755,9 @@
         pendingAnimationId = id;
       }
       saveState();
-      render();
+      const needsFilteredRender = state.view === "owned" || state.view === "pending";
+      if (needsFilteredRender) render();
+      else refreshOwnedCard(id);
       if (book) announce(wasOwned ? book.titulo + " vuelve a estar pendiente." : book.titulo + " desbloqueado.");
     }
 
